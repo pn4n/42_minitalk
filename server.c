@@ -1,26 +1,5 @@
 #include "header.h"
 
-// void sig_handler(int signum, siginfo_t *siginfo, void *ucontext)
-// {
-//     printf("Received signal %d\n", signum);
-//         static int cnt = 0;
-//     (void)ucontext;
-
-//     cnt++;
-//     if (siginfo->si_code == SI_USER || siginfo->si_code == SI_QUEUE)
-//         kill(siginfo->si_pid, SIGUSR1);
-//     else 
-//         kill(siginfo->si_pid, SIGUSR2);
-
-//     printf("#%d\n", cnt);
-//     printf("\tsi_signo: %d \n", siginfo->si_signo);
-//     printf("\tsi_code.: %d\n", siginfo->si_code);
-//     printf("\tsi_errno: %d\n", siginfo->si_errno);
-//     if (siginfo->si_code == SI_USER || siginfo->si_code == SI_QUEUE) {
-//       printf("\tsi_pid..: %d\n", siginfo->si_pid);
-//       printf("\tsi_uid..: %d\n", siginfo->si_uid);
-//     }
-// }
 Client *head = NULL;
 
 Client *new_client(pid_t pid) {
@@ -35,8 +14,6 @@ Client *new_client(pid_t pid) {
     new -> size = 0;
     new -> bit = 0;
     new -> bit_counter = 0;
-    printf("client %d created\n", pid);
-
     return new;
 }
 
@@ -79,9 +56,6 @@ int add_char(Client *client, int signum)
 {
     client -> bit <<= 1;
     client -> bit |= (signum == HIGHSIG);
-    // printf("%d", signum == HIGHSIG);
-    // if (signum == HIGHSIG)
-        // client->bin |= 1 << client->idx;
     client->bit_counter++;
     if (client->bit_counter == 8)
     {
@@ -96,29 +70,18 @@ int add_char(Client *client, int signum)
         } // getting message 
         else {
             client->mes[client->idx++] = client->bit;
-            // printf("added char to %d: %c\nsize: %d, idx:%d\n", client->pid, client->bit, client->size, client->idx);
 
             if (client->bit == 0)
-            // if (client->idx == client->size + 1)
             {
                 client->mes[client->idx] = 0;
                 ft_write(client->mes);
                 del_client(client -> pid);
                 printf("\nclient deleted\n");
 
-                // client->idx = client->size = client->bit = client->bit_counter = 0;
             } else {
                 client->bit = client->bit_counter = 0;
             }
         }
-        // if (client->bin == 0)
-        // {
-        //     printf("ДОН\n");
-        //     return;
-        // }
-        // printf("%c", client->bin);
-        // client->bin = 0;
-        // client->idx = 0;
     }
     return 0;
 }
