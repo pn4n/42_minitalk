@@ -35,6 +35,9 @@ Client *new_client(pid_t pid) {
     new -> size = 0;
     new -> bit = 0;
     new -> bit_counter = 0;
+    printf("client %d created\n", pid);
+
+    return new;
 }
 
 Client *get_client(pid_t pid) {
@@ -52,26 +55,61 @@ Client *get_client(pid_t pid) {
     head = client;
     return client;
 }
-void add_char(Client *client, int signum)
+
+void del_client(pid_t pid) {
+    Client *cur = head;
+    Client *prev = NULL;
+    while (cur)
+    {
+        if (cur->pid == pid)
+        {
+            if (prev)
+                prev->next = cur->next;
+            else
+                head = cur->next;
+            free(cur);
+            return;
+        }
+        prev = cur;
+        cur = cur->next;
+    }
+}
+
+int add_char(Client *client, int signum)
 {
     client -> bit <<= 1;
     client -> bit |= (signum == HIGHSIG);
+    // printf("%d", signum == HIGHSIG);
     // if (signum == HIGHSIG)
         // client->bin |= 1 << client->idx;
     client->bit_counter++;
     if (client->bit_counter == 8)
     {
-        if (client->idx < 0)
+        // getting size 
+        if (client->idx < 0) 
         {
             client->size = (int)client->bit;
             client->mes = malloc(client->size + 1);
-            client->idx = 0;
-            client->bit = 0;
-            client->bit_counter = 0;
-        } else {
+            if (!client->mes)
+                return -1;
+            client->idx = client->bit = client->bit_counter = 0;
+        } // getting message 
+        else {
             client->mes[client->idx++] = client->bit;
-            client->bit = 0;
-            client->bit_counter = 0;
+            // printf("added char to %d: %c\nsize: %d, idx:%d\n", client->pid, client->bit, client->size, client->idx);
+
+            if (client->bit == 0)
+            // if (client->idx == client->size + 1)
+            {
+                client->mes[client->idx] = 0;
+                ft_write(client->mes);
+                del_client(client -> pid);
+                printf("\nclient deleted\n");
+
+                // client->idx = client->size = client->bit = client->bit_counter = 0;
+            } else {
+                client->bit = client->bit_counter = 0;
+            }
         }
         // if (client->bin == 0)
         // {
@@ -82,25 +120,29 @@ void add_char(Client *client, int signum)
         // client->bin = 0;
         // client->idx = 0;
     }
+    return 0;
+}
+
+// send the opposite signal to notice the client that an error has occured
+void send_error(pid_t pid, int signum) {
+    if (signum == HIGHSIG)
+        kill(pid, LOWSIG);
+    else
+        kill(pid, HIGHSIG);
 }
 
 void sig_handler(int signum, siginfo_t *siginfo, void *ucontext)
 {
     Client *client;
+    int pid;
 
-    client = get_client(siginfo->si_pid);
+    pid = siginfo->si_pid;
+    client = get_client(pid);
+    if (!client || add_char(client, signum))
+        return (send_error(pid, signum));
+    // printf("\nsending sig:%d\tbin:%d\tmes:%s\n", signum == HIGHSIG, client->bit, client->mes);
+    kill(pid, signum);
     (void)ucontext;
-    add_char(client, signum);
-    kill(client->pid, signum);
-    // if (signum == SIGUSR1)
-    //  {
-    //     write(1, "1", 1);
-    //     kill(siginfo->si_pid, SIGUSR1);
-    //  }
-    // else if (signum == SIGUSR2) {
-    //     write(1, "0", 1);
-    //     kill(siginfo->si_pid, SIGUSR2);
-    // }
 }
 
 int main()

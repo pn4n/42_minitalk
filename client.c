@@ -8,45 +8,57 @@
 // }
 static volatile sig_atomic_t g_sigsent = 0;
 
-int ft_strlen(char *str)
-{
-    u_char i = 0;
-    while (str[i])
-        i++;
-    return i;
-}
-
-int ft_write(char *mes)
-{
-    write(1, mes, ft_strlen(mes));
-    return 0;
-}
-
 void sig_handler(int signum)
 {
     g_sigsent = signum;
 }
 
-short send_char(pid_t spid, char c)
+int send_char(pid_t spid, char c)
 {
     char sig;
 
+    printf("char to send:%d\n", c);
+
     for (int i = 7; i >= 0; i--)
     {
+        printf("[%d] ", i);
+
         g_sigsent = 0;
+
         if (c & (1 << i))
             sig = HIGHSIG;
         else
             sig = LOWSIG;
+        printf("%d ", sig == HIGHSIG);
     
         kill(spid, sig);
-        while (!g_sigsent) pause();
-        if (g_sigsent != sig)
+        while (!g_sigsent) {printf("pause\twaitingfor:%d ", sig);  pause();}
+        if (g_sigsent != sig) 
             return -1;
+        printf(" sig recieved\n");
     }
+    printf("send_end\n");
     return 0;
 }
 
+void send0(pid_t spid) {
+    int i;
+
+    i = 0;
+
+    while (i++ < 8)
+    kill(spid, LOWSIG);
+    // for (int i = 0; i < 7; i++)
+    // {
+    //     g_sigsent = 0;
+    //     kill(spid, LOWSIG);
+    //     printf("0[%d] \n", i);
+    //     while (!g_sigsent) {printf("pause\twaitingfor:%d ", LOWSIG);  pause();}
+    //     if (g_sigsent != LOWSIG)
+    //         printf("error\n");
+    // }
+
+}
 int send_message(int spid, char *mes)
 {
     struct sigaction sa = {0};
@@ -61,10 +73,14 @@ int send_message(int spid, char *mes)
     while (*mes)
     {
         if (send_char(spid, *mes))
-            return (ft_write("Char was not sent:") || ft_write(*mes), -1);
+            return (ft_write("Char was not sent:") || ft_write(mes) || 1);
         mes++;
     }
-    return (send_char(spid, 0));
+    printf("huyamba\n");
+    send_char(spid, 0);
+    // send0(spid);
+    printf("afterhuyamba\n");
+    return (0);
 }
 
 int main(int argc, char *argv[])
@@ -81,7 +97,9 @@ int main(int argc, char *argv[])
         else
 
         // printf("[пидарасина #%d] > %s\nзакинул тебе за щеку проверяй)\n", pid, argv[2]);
-        send_message(spid, argv[2]) && ft_write("Error sending message\n");
+        if (send_message(spid, argv[2])) 
+            ft_write("Error sending message\n");
+        else printf("hui!");
     }
     return 0;
 }

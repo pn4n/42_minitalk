@@ -7,12 +7,15 @@
 #define HIGHSIG SIGUSR1
 #define LOWSIG SIGUSR2
 
-typedef struct client_s {
+int ft_strlen(char *str);
+int ft_write(char *mes);
+
+typedef struct Client {
     pid_t pid;
     char *mes;
     short idx;
     u_char size;
     char bit;
     u_char bit_counter;
-    Client *next;
+    struct Client *next;
 } Client;
