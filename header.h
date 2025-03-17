@@ -9,13 +9,14 @@
 
 int ft_strlen(char *str);
 int ft_write(char *mes);
+void pid_print();
 
 typedef struct Client {
-    pid_t pid;
-    char *mes;
-    short idx;
-    u_char size;
-    char bit;
-    u_char bit_counter;
-    struct Client *next;
+	pid_t pid;
+	char *mes;
+	short idx;
+	uint size;
+	char bit;
+	u_char bit_counter;
+	struct Client *next;
 } Client;
