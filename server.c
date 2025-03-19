@@ -113,7 +113,7 @@ void sig_handler(int signum, siginfo_t *siginfo, void *ucontext)
 	(void)ucontext;
 }
 
-int main()
+int main(int argc, char **argv)
 {
 	struct sigaction sa;
 
@@ -122,8 +122,10 @@ int main()
 	sa.sa_sigaction = sig_handler;
 	sigaction(HIGHSIG, &sa, NULL);
 	sigaction(LOWSIG, &sa, NULL);
-	pid_print();
+	if (argc == 1)
+		pid_print();
 	while (1)
 		sleep(1);
+	(void)argv;
 	return 0;
 }

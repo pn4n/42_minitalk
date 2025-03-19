@@ -30,7 +30,8 @@ void ft_putu(unsigned int n)
 
 
 void pid_print() {
-	ft_write("=== SERVER STARTED WITH PID: ");
+	ft_write("__PID: ");
+	// ft_write("=== SERVER STARTED WITH PID: ");
 	ft_putu(getpid());
-	ft_write(" ===\n");
+	// ft_write(" ===\n");
 }

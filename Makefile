@@ -18,13 +18,29 @@ $(SERVER): $(SERVER_C) $(DEPS)
 $(CLIENT): $(CLIENT_C) $(DEPS)
 	$(CC) $(CFLAGS) $(CLIENT_C) $(DEPS) -o $(CLIENT)
 	
-# ./$(CLIENT) $(pgrep -n server)
+
+kill:
+	@pids=$$(ps aux | grep -P "./server(\s+\d+)?$$" | grep -v grep | awk '{print $$2}'); \
+	if [ -n "$$pids" ]; then \
+		echo "killed: $$pids"; \
+		kill -9 $$pids 2>/dev/null || true; \
+	else \
+		echo "No server processes found."; \
+	fi
+
+slist:
+	@pids=$$(ps aux | grep -P "./server(\s+\d+)?$$" | grep -v grep | awk '{print $$2}'); \
+	if [ -n "$$pids" ]; then \
+		echo "$$pids"; \
+	else \
+		echo "no servers found"; \
+	fi
+
 
 clean:
-	rm -f $(OBJS)
+	rm -f $(SERVER) $(CLIENT)
 
 fclean: clean
-	rm -f $(NAME)
 
 re: fclean all
 
