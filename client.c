@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 		if (kill(spid, 0))
 			return (ft_write("no proccess found with the given pid\n"), 0);
 		else
-
+		// pid_print();
 		if (send_message(spid, argv[2])) 
 			ft_write("error sending message\n");
 	}

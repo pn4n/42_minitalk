@@ -5,7 +5,14 @@ TESTS_DIR="tests"
 SUCCESS_COUNT=0
 TOTAL_COUNT=0
 SPID=""
-# SNUM=0
+
+# Colors
+GREEN="\033[0;32m"
+RED="\033[0;31m"
+BLUE="\033[0;34m"
+PURPLE="\033[0;35m"
+NC="\033[0m" # No Color
+
 
 # run_serv() {
 # 	SNUM=$((1 + $RANDOM % 1000))
@@ -30,15 +37,7 @@ run_test() {
     > $OUT
     
     stdbuf -o0 ./server 1 > $OUT &
-    
-    PID=""
-    while [ -z "$PID" ]; do
-        PID=$(ps aux | grep -P "./server(\s+\d+)?$" | grep -v grep | awk '{print $2}')
-        if [ -z "$PID" ]; then
-            echo "Waiting for server to start..."
-            sleep 0.2
-        fi
-    done
+	PID=$!
     
     echo "SPID: $PID"
 
@@ -48,10 +47,10 @@ run_test() {
     
     # Check if output matches test file
     if diff -q --strip-trailing-cr "$test_file" "$OUT" > /dev/null; then
-        echo -e "✅ Test $test_num: $(basename $test_file)"
+        echo -e "${GREEN}✅ Test $test_num: $(basename $test_file)${NC}"
         ((SUCCESS_COUNT++))
     else
-        echo -e "❌ Test $test_num: $(basename $test_file)"
+        echo -e "${RED}❌ Test $test_num: $(basename $test_file)${NC}"
         echo "Diff output:"
         diff --strip-trailing-cr "$test_file" "$OUT"
     fi
@@ -78,8 +77,8 @@ rm $OUT
 echo "===== SUMMARY ====="
 echo "passed: $SUCCESS_COUNT/$TOTAL_COUNT"
 if [ $SUCCESS_COUNT -eq $TOTAL_COUNT ]; then
-    echo "all tests passed 🎉"
+    echo -e "${GREEN}all tests passed 🎉${NC}"
 else
-    echo "some tests failed 👎"
+    echo -e "${RED}some tests failed 👎${NC}"
     exit 1
 fi
