@@ -45,6 +45,7 @@ void del_client(pid_t pid) {
 			else
 				head = cur->next;
 			free(cur);
+			free(mes);
 			return;
 		}
 		prev = cur;
